@@ -1,0 +1,109 @@
+openapi: 3.0.3
+info:
+  title: File Processing API
+  version: 1.0.0
+
+paths:
+  /api/batch:
+    post:
+      summary: Upload a batch of files for processing
+      tags:
+        - Batch
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      file:
+                        type: string
+                        format: binary
+                      operation:
+                        type: string
+                        description: operation
+                        example: 'resize'
+                      parameters:
+                        type: string
+                        description: JSON string with processing parameters
+                        example: '{"operation":"resize","width":100,"height":100}'
+              required:
+                - files
+      responses:
+        '200':
+          description: Batch created and processing started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  batch_id:
+                    type: integer
+                  status:
+                    type: string
+                    example: processing
+
+  /api/batch/{batchId}:
+    get:
+      summary: Get status and file results of a batch
+      tags:
+        - Batch
+      parameters:
+        - name: batchId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Batch details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  batch:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      status:
+                        type: string
+                      total_files:
+                        type: integer
+                      completed_files:
+                        type: integer
+                      failed_files:
+                        type: integer
+                      processing_files:
+                        type: integer
+                      pending_files:
+                        type: integer
+                      files:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            status:
+                              type: string
+                            original_path:
+                              type: string
+                              format: uri
+                            processed_path:
+                              type: string
+                              format: uri
+                              nullable: true
+                            error_message:
+                              type: string
+                              nullable: true
+                            operation_type:
+                              type: string
+                            operation_params:
+                              type: object

@@ -1,0 +1,56 @@
+services:
+  nginx:
+    container_name: nginx
+    build:
+      context: './provisioning/docker/nginx/local'
+    restart: on-failure
+    ports:
+      - '8080:80'
+    volumes:
+      - ./OctopusTech:/var/www/html/:delegated
+    links:
+      - app
+    networks:
+      - octopus
+
+  app:
+    build:
+      context: './provisioning/docker/php'
+    container_name: app
+    restart: on-failure
+    working_dir: /var/www/html
+    volumes:
+      - ./OctopusTech:/var/www/html/:delegated
+    networks:
+      - octopus
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      POSTGRES_USER: laravel
+      POSTGRES_PASSWORD: laravel
+      POSTGRES_DB: laravel
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - octopus
+
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - octopus
+
+volumes:
+  pgdata:
+
+networks:
+  octopus:
+    driver: bridge
